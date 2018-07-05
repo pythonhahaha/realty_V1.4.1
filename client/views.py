@@ -11,25 +11,118 @@ from .models import *
 # Create your views here.
 # 客户信息
 def customer_list1(request):
-
-    cust_list = CustomerInfo.objects.all()
-
-    return render(request, 'customer_list1.html', {'cust_list': cust_list})
+    customerinfo = CustomerInfo.objects.all()
+    return render(request, 'customer_list1.html', {'customerinfo': customerinfo})
 
 
  # 客户信息编辑
 def customer_edit(request):
-    cust_list_bj = CustomerInfo.objects.create()
-    return render(request, 'customer_edit.html', {'cust_list_bj': cust_list_bj})
+    jj = request.GET.get('jj', '')
+    print jj
+    jj = int(jj)
+    customerinfo = CustomerInfo.objects.get(customer_id=jj)
+    # user = request.POST.get('customerForUser')
+    # user_name = UserInfo.objects.filter(user_id=jj).update(user_name=user)
+    # qq = request.POST.get('customerQq')
+    # customer_qq = UserInfo.objects.filter(customer_id=jj).update(customer_qq=qq)
+    return render(request,'customer_edit.html')
+
 
 # 客户详情
 def customer_detail(request):
-    return render(request, 'customer_detail.html')
+    customer_detail = request.GET.get('customer_detail', '')
+    customer_detail = int(customer_detail)
+    customerinfo = CustomerInfo.objects.get(customer_id=customer_detail)
+    return render(request, 'customer_detail.html', {'customerinfo': customerinfo})
+# 客户删除
+def customer_dele(request):
+    dele = request.GET.get('dele', '')
+    dele = int(dele)
+    delet = CustomerInfo.objects.get(customer_id=dele).delete()
+    return HttpResponseRedirect('/client/customer_list1.html/')
+# 查询客户信息
+def index_customer(request):
+    content = request.GET.get('customerInput')
 
+    queryType = request.GET.get('queryType')
+    # 按顾客信息查询
+    if queryType == '1':
+        customerinfo = CustomerInfo.objects.all()
+        customerinfo = CustomerInfo.objects.filter(customer_name__contains=content)
+        return render(request, 'customer_list1.html', {'customerinfo': customerinfo})
+    elif queryType == '2':
+        customerinfo = CustomerStatus.objects.get(status_name=content).customerinfo_set.all()
+    #     # condition = CustomerCondition.objects.get(condition_name=content).condition_id
+    #     # condition = int(condition)
+    #     # cus = CustomerInfo.objects.filter(condition_id=condition)
+        return render(request, 'customer_list1.html', {"customerinfo": customerinfo})
+    elif queryType == '3':
+        customerinfo = CustomerSource.objects.get(source_name=content).customerinfo_set.all()
+        return render(request, 'customer_list1.html', {"customerinfo": customerinfo})
+    elif queryType == '4':
+        customerinfo = CustomerType.objects.get(type_name=content).customerinfo_set.all()
+    #     cus = CustomerType.objects.get(type_name=content).type_id
+    #     print cus
+    #     cusi = int(cus)
+    #     cus = CustomerInfo.objects.filter(type_id=cusi)
+        return render(request, 'customer_list1.html', {"customerinfo": customerinfo})
+    elif queryType == '5':
+        customerinfo = UserInfo.objects.get(user_name=content).customerinfo_set.all()
+        return render(request, 'customer_list1.html', {"customerinfo": customerinfo})
+    elif queryType == '6':
+        customerinfo = CustomerInfo.objects.filter(customer_company=content)
+        return render(request, 'customer_list1.html', {"customerinfo": customerinfo})
+    # return render(request,'c_c_information.html')
 # 添加客户信息
 def customer_add(request):
+    if request.method == 'GET':
+        return render(request, 'customer_add.html')
+    else:
 
-    return render(request,'customer_add.html')
+        customer_name = request.POST.get('customerName', '')
+        customerJob = request.POST.get('customerJob', '')
+        customer_sex = request.POST.get('customerSex', '')
+        birth_day = request.POST.get('customerBirthday', '')
+        customer_mobile = request.POST.get('customerMobile', '')
+        customer_address = request.POST.get('customerAddress', '')
+        customer_addman = request.POST.get('customerAddMan', '')
+        customer_mobile = request.POST.get('customerTel', '')
+        customer_company = request.POST.get('customerCompany', '')
+        cust = request.POST.get('customerSource')
+        source_name = CustomerSource.objects.get(source_name=cust)
+        customerType = request.POST.get('customerType')
+        type_name = CustomerType.objects.get(type_name=customerType)
+        customer_email = request.POST.get('customerEmail')
+        customerCondition = request.POST.get('customerCondition')
+        condition = CustomerStatus.objects.get(status_name=customerCondition)
+        customer_qq = request.POST.get('customerQq')
+        change_man = request.POST.get('customerChangeMan')
+        customer_blog = request.POST.get('customerBlog')
+        customer_msn = request.POST.get('customerMsn')
+        customer_remark = request.POST.get('customerRemark')
+        try:
+            ci = CustomerInfo.objects.get(customer_name=customer_name)
+        except:
+            ci = CustomerInfo.objects.create(customer_name=customer_name,
+                                             customer_job=customerJob,
+                                             customer_sex=customer_sex,
+                                             customer_mobile=customer_mobile,
+                                             customer_address=customer_address,
+                                             type=type_name,
+                                             customer_addman=customer_addman,
+                                             customer_company=customer_company,
+                                             source=source_name,
+                                             birth_day=birth_day,
+                                             customer_email=customer_email,
+                                             status=condition,
+                                             customer_qq=customer_qq,
+                                             change_man=change_man,
+                                             customer_blog=customer_blog,
+                                             customer_msn=customer_msn,
+                                             customer_remark=customer_remark
+                                             )
+
+            return HttpResponseRedirect('/client/customer_list1.html/')
 
 
 # 客户分配信息目录
@@ -66,7 +159,7 @@ def customer_source_list(request):
     cust_source_list_del = CustomerSource .objects.filter()
     return render(request, 'customer_source_list.html', {'cust_source_list':cust_source_list},{'cust_source_list_del':cust_source_list_del})
 
-    print(cust_source_list)
+
 
 # 客户来源信息添加
 def customer_source_add(request):
@@ -127,3 +220,4 @@ def customer_source_list_tab(request, num=1):
     cust_paglist = range(cust_tab_begin,cust__tab_end+1)
 
     return render(request,'customer_source_list.html',{'cust_list_post':cust_list_post,'cust_paglist':cust_paglist,'num':num,'cust_posts':cust_posts})
+
